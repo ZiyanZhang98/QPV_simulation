@@ -1,13 +1,10 @@
 #%%
 import netsquid as ns
 import numpy as np
-import random
 from netsquid.protocols import NodeProtocol
-from netsquid.components import QuantumChannel, ClassicalChannel
-from netsquid.nodes import Node, DirectConnection, Connection
-from netsquid.components.models.qerrormodels import FibreLossModel as qfm
-from netsquid.components.models.delaymodels import FibreDelayModel as cfm
+from netsquid.nodes import Node
 import matplotlib.pyplot as plt
+from component import QuantumConnection, ClassicalConnection 
 # %%
 def bool_func(x, y):
     '''
@@ -15,6 +12,7 @@ def bool_func(x, y):
     '''
     return (x + y) % 2
 
+#%%
 class V0Protocol(NodeProtocol):
     def __init__(self, node=None, name=None, x=1, y=1):
         super().__init__(node, name)
@@ -94,20 +92,22 @@ class PProtocol(NodeProtocol):
         port_c = self.node.ports['pv0']
         port_c2 = self.node.ports['pv1']
         while True:
-            yield self.await_port_input(port_q)
+            """
+            !!!!!! WRONG!!!!!
+            """
+            yield self.await_port_input(port_q) or self.await_port_input(port_c) or self.await_port_input(port_c2)
             qubit = port_q.rx_input().items[0]
-            yield self.await_port_input(port_c)
             self.x = port_c.rx_input().items[0]
-            yield self.await_port_input(port_c2)
             self.y = port_c2.rx_input().items[0]
+
             if bool_func(self.x, self.y) == 0:
                 state, prob = ns.qubits.measure(qubit)
                 labels_z =  ("|0>", "|1>")
-                print(f"{ns.sim_time()}: p's particle received and measured "f"{labels_z[state]} with probability {prob:.2f}")
+                print(f"{ns.sim_time()}: Particle p received and measured "f"{labels_z[state]} with probability {prob:.2f}")
             else:
                 state, prob = ns.qubits.measure(qubit, observable=ns.X)
                 labels_z =  ("|+>", "|->")
-                print(f"{ns.sim_time()}: V0's particle {self.node.name} measured "
+                print(f"{ns.sim_time()}: Particle p received and measured "
                     f"{labels_z[state]} with probability {prob:.2f}")
             
             port_c.tx_output(labels_z[state])
@@ -126,30 +126,17 @@ def main(round, distance, x, y):
             node_p = Node('p', port_names=['quantum', 'pv0', 'pv1'])
             node_v1 = Node('v1', port_names=['v1p', 'v1v0'])
 
-            # photon loss rate  = 1 - initial loss - 10 ** (- loss per km * distance/10)
-            q_delay_model = qfm(p_loss_init=0, p_loss_length=0.2)
-
             # Classical channel with fibre delay = distance / speed in fibre
-            c_connection1 = DirectConnection('classical_1',
-                                            ClassicalChannel('p2v0', length=d, delay=d/200000),
-                                            ClassicalChannel('v2p0', length=d, delay=d/200000)
-            )
+            c_connection1 = ClassicalConnection(length=d, name='p0v1', direction='Bi')
 
-            c_connection2 = DirectConnection('classical_2',
-                                        ClassicalChannel('v1p', length=d, delay=d/200000),
-                                        ClassicalChannel('pv1', length=d, delay=d/200000)
-            )
+            c_connection2 = ClassicalConnection(length=d, name='v1p', direction='Bi')
 
-            c_connection3 = DirectConnection('classical_3',
-                                        ClassicalChannel('v0v1', length=d, delay=d/200000),
-                                        ClassicalChannel('v1v0', length=d, delay=d/200000)
-            )
+            c_connection3 = ClassicalConnection(length=d, name='v0v1', direction='Bi')
+
             # Quantum connection between V0 and P
-            q_connection = Connection("QuantumConnection")
-            q_channel = QuantumChannel("Channel_A2B", length=d, models={'quantum_loss_model':q_delay_model})
-            q_connection.add_subcomponent(q_channel,
-                                        forward_input=[("A", "send")],
-                                        forward_output=[("B", "recv")])
+
+            q_connection = QuantumConnection(name="Channel_A2B", length=d, direction='A2B')
+
             node_v0.ports['quantum'].connect(q_connection.ports['A'])
             node_p.ports['quantum'].connect(q_connection.ports['B'])
             # Classical connection between V0 and P
@@ -170,30 +157,34 @@ def main(round, distance, x, y):
             v1_protocol.start()
             p_protocol.start()
 
-            stats = ns.sim_run(91)
+            stats = ns.sim_run()
 
+            # Check results
             a = v0_protocol.get_answer()
             b = v1_protocol.get_result()
             t_a = v0_protocol.get_time()
             t_b = v1_protocol.get_time()
             m = v0_protocol.get_result()
-
             if a is None or b is None:
                 print('Loss')
             else:
-                if a == b and t_a == t_b and a == m:
+                if a == b and a == m:
                     print('Time and answer matches, correct!')
                     correct_counter = correct_counter + 1
                 elif a != b and t_a != t_b and a != m:
                     print('Wrong')
                 else:
                     print('Abort')
+            # Reset the timer
+            ns.sim_reset()
 
         time.append(v0_protocol.get_time())
         p_err.append((round-correct_counter)/round)
-    return p_err, fibre_distance
+    return p_err, fibre_distance, time
 # %% Output images
-p_err, distance = main(round=10, distance=200, x=1, y=0)
+p_err, distance, time = main(round=10, distance=200, x=1, y=0)
 plt.figure(dpi=400)
 plt.plot(distance, p_err)
+plt.xlabel('Distance (km)')
+plt.ylabel('Error rate')
 # %%
