@@ -92,10 +92,13 @@ class PProtocol(NodeProtocol):
         port_c = self.node.ports['pv0']
         port_c2 = self.node.ports['pv1']
         while True:
-            """
-            !!!!!! WRONG!!!!!
-            """
-            yield self.await_port_input(port_q) or self.await_port_input(port_c) or self.await_port_input(port_c2)
+            expr = yield (self.await_port_input(port_q) or self.await_port_input(port_c) or self.await_port_input(port_c2))
+
+            if expr.first_term.first_term.value is not True:
+                port_c.tx_output('Loss')
+                port_c2.tx_output('Loss')
+                return 0
+            
             qubit = port_q.rx_input().items[0]
             self.x = port_c.rx_input().items[0]
             self.y = port_c2.rx_input().items[0]
@@ -165,6 +168,7 @@ def main(round, distance, x, y):
             t_a = v0_protocol.get_time()
             t_b = v1_protocol.get_time()
             m = v0_protocol.get_result()
+            
             if a is None or b is None:
                 print('Loss')
             else:
