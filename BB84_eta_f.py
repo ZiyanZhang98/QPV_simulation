@@ -74,6 +74,7 @@ class V1Protocol(NodeProtocol):
     def run(self):
         port_c = self.node.ports['v1p']
         port_c.tx_output(self.y)
+        print('message sent')
         self.start_time = ns.sim_time()
         while True:
             yield self.await_port_input(port_c)
@@ -98,21 +99,18 @@ class PProtocol(NodeProtocol):
     
     def run(self):
         while True:
-            expr = yield (self.await_port_input(self.port_q)) #or (self.await_port_input(self.port_c) or self.await_port_input(self.port_c2)))
+            expr = yield (self.await_port_input(self.port_q)) 
+            yield (self.await_port_input(self.port_c) and self.await_port_input(self.port_c2))
             
             qubit = self.port_q.rx_input().items[0]
-            # self.x = self.port_c.rx_input().items[0]
-            # self.y = self.port_c2.rx_input().items[0]
+            self.x = self.port_c.rx_input().items[0]
+            self.y = self.port_c2.rx_input().items[0]
+
+            print(self.x, self.y)
 
             is_q = expr.first_term.first_term.value
-            # is_basis = (expr.second_term.first_term.value,expr.second_term.second_term.value)
-            print(is_q)
-            print(qubit)
-            # print(self.x, self.y)
-            print('hello')
-
-            if qubit is None:
-                yield self.await_timer(end_time=ns.sim_time()+0.001)
+            is_basis = (expr.second_term.first_term.value,expr.second_term.second_term.value)
+            print(is_q, is_basis)
 
             if bool_func(self.x, self.y) == 0:
                 state, prob = ns.qubits.measure(qubit)
@@ -173,7 +171,6 @@ def main(round, distance, x, y):
             
             if a == 'Loss' or b == 'Loss' or a is None or b is None:
                 pass
-            #print('Loss')
             else:
                 if a == b and a == m and t_a == t_b:
                     print('Time and answer matches, correct!')
