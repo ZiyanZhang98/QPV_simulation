@@ -16,7 +16,7 @@ class ClassicalConnection(DirectConnection):
         self.len = length
 
         if direction != 'B2A':
-            self.add_subcomponent(ClassicalChannel('Channel_A2B', length=self.len, deyal=self.len/3e5, models=models),
+            self.add_subcomponent(ClassicalChannel('Channel_A2B', length=self.len, delay=self.len/3e5, models=models),
                                   forward_input=[('A', 'send')],
                                   forward_output=[('B', 'recv')])
 

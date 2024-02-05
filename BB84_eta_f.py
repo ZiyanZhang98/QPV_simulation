@@ -28,6 +28,8 @@ def main(round, distance, x, y):
             node_v0 = Node('v0', port_names = ['quantum', 'v0p', 'v0v1'])
             node_p = Node('p', port_names=['quantum', 'pv0', 'pv1'])
             node_v1 = Node('v1', port_names=['v1p', 'v1v0'])
+            network = Network('QPV_BB84')
+            network.add_nodes([node_p, node_v0, node_v1])
             # Classical channel with fibre delay = distance /3e5, connection between V0 and P
             c_connection1 = ClassicalConnection(length=d, name='p0v1', direction='Bi')
             node_v0.ports['v0p'].connect(c_connection1.ports['A'])
@@ -83,4 +85,19 @@ plt.plot(distance, p_err)
 plt.xlabel('Distance (km)')
 plt.ylabel('Error rate')
 # %%
+# %%
+node_v0 = Node('v0', port_names = ['quantum', 'v0p', 'v0v1'])
+node_p = Node('p', port_names=['quantum', 'pv0', 'pv1'])
+node_v1 = Node('v1', port_names=['v1p', 'v1v0'])
+network = Network('QPV_BB84')
+network.add_nodes([node_p, node_v0, node_v1])
+network.add_connection(node_v1, node_v0, connection=ClassicalConnection(length=3, name='v0v1', direction='Bi'), port_name_node1='v1v0', port_name_node2='v0v1')
+handler_2 = lambda m: print(f"V0 received {m} at {ns.sim_time()}!")
+handler_c = lambda m: print(f"V1 received {m} at {ns.sim_time()}!")
+node_v0.ports['v0v1'].bind_input_handler(handler_2)
+node_v1.ports['v1v0'].bind_input_handler(handler_c)
+node_v0.ports['v0v1'].tx_output("Hi v1!")
+node_v1.ports['v1v0'].tx_output("Hi v0!")
+x = ns.sim_run()
+ns.sim_reset()
 # %%
