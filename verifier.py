@@ -4,12 +4,13 @@ from netsquid.protocols import NodeProtocol
 from bool_function import bool_func
 #%%
 class V0Protocol(NodeProtocol):
-    def __init__(self, node=None, name=None, x=1, y=1):
+    def __init__(self, len, node=None, name=None, x=1, y=1):
         super().__init__(node, name)
         self.result = None
         self.answer = None
         self.start_time = 0
         self.end_time = 0
+        self.len = len
         self.x = x
         self.y = y
 
@@ -35,6 +36,7 @@ class V0Protocol(NodeProtocol):
         port_c1 = self.node.ports['v0p']
         q1, q2 = self.prepare_epr_pair()
         port_q.tx_output(q1)
+        yield self.await_timer(duration = (self.len/2e5-self.len/3e5)*1e9)
         port_c1.tx_output(self.x)
 
         while True:
@@ -59,15 +61,17 @@ class V0Protocol(NodeProtocol):
             self.answer = answer
 #%%
 class V1Protocol(NodeProtocol):
-    def __init__(self, y=1, node=None, name=None):
+    def __init__(self, len, y=1, node=None, name=None):
         super().__init__(node, name)
         self.answer = None
         self.end_time = 0
         self.start_time = 0
         self.y = y
+        self.len = len
 
     def run(self):
         port_c = self.node.ports['v1p']
+        yield self.await_timer(duration = (self.len/2e5-self.len/3e5)*1e9)
         port_c.tx_output(self.y)
         self.start_time = ns.sim_time()
         while True:

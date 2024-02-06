@@ -31,17 +31,16 @@ class QuantumConnection(Connection):
         self.len = length
         if models is None:
             models = {
-                'quantum_loss_model': FibreLossModel(p_loss_init=p_loss_init, p_loss_length=p_loss_length),
-                'delay_model': FibreDelayModel(c=2e5)
+                'quantum_loss_model': FibreLossModel(p_loss_init=p_loss_init, p_loss_length=p_loss_length)
             }
 
         if direction != 'B2A':
-            self.add_subcomponent(QuantumChannel('QChannel_A2B', length=self.len, models=models),
+            self.add_subcomponent(QuantumChannel('QChannel_A2B', length=self.len, delay=self.len/2e5, models=models),
                                   forward_input=[('A', 'send')],
                                   forward_output=[('B', 'recv')])
 
         if direction != 'A2B':
-            self.add_subcomponent(QuantumChannel('QChannel_B2A', length=self.len, models=models),
+            self.add_subcomponent(QuantumChannel('QChannel_B2A', length=self.len, delay=self.len/2e5, models=models),
                                   forward_input=[('B', 'send')],
                                   forward_output=[('A', 'recv')])
 # %%

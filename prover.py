@@ -13,11 +13,10 @@ class PProtocol(NodeProtocol):
     
     def run(self):
         while True:
-            expr = yield (self.await_port_input(self.port_q)) or (yield (self.await_port_input(self.port_c) or self.await_port_input(self.port_c2)))
-
-            print(expr.first_term.first_term.value, expr.second_term.first_term.value, expr.second_term.second_term.value)
-
+            yield self.await_port_input(self.port_q) 
             qubit = self.port_q.rx_input().items[0]
+            
+            yield (self.await_port_input(self.port_c) or self.await_port_input(self.port_c2))
             self.x = self.port_c.rx_input().items[0]
             self.y = self.port_c2.rx_input().items[0]
 
