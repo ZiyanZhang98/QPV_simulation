@@ -1,5 +1,5 @@
-def bool_func(x, y):
+def bool_func(x, y, z):
     '''
     Pre-shared boolean function to determine measurement basis. 
     '''
-    return (x + y) % 2
+    return (x + y + z) % 2

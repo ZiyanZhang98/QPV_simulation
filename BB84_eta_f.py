@@ -20,6 +20,7 @@ def main(round, distance, x, y):
             node_v0 = Node('v0', port_names = ['quantum', 'v0p', 'v0v1'])
             node_p = Node('p', port_names=['quantum', 'pv0', 'pv1'])
             node_v1 = Node('v1', port_names=['v1p', 'v1v0'])
+            node_v2 = Node('v2', port_names=['v2p', ''])
             # Classical channel with fibre delay = distance /3e5, connection between V0 and P
             c_connection1 = ClassicalConnection(length=d, name='p0v1', direction='Bi')
             node_v0.ports['v0p'].connect(c_connection1.ports['A'])
@@ -70,7 +71,7 @@ def main(round, distance, x, y):
         p_err.append((round-correct_counter)/round)
     return p_err, fibre_distance, time
 # %% Output images
-p_err, distance, time = main(round=10, distance=200, x=1, y=0)
+p_err, distance, time = main(round=10, distance=50, x=1, y=0)
 plt.figure(dpi=400)
 plt.plot(distance, p_err)
 plt.xlabel('Distance (km)')
