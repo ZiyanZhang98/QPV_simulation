@@ -3,7 +3,9 @@
 from netsquid.components import QuantumChannel, ClassicalChannel
 from netsquid.nodes import DirectConnection, Connection
 from netsquid.components.models.qerrormodels import FibreLossModel
-from netsquid.components.models.delaymodels import FibreDelayModel
+from netsquid.components.models import qerrormodels
+import netsquid as ns
+import random
 #%%
 class ClassicalConnection(DirectConnection):
     def __init__(self, length, name='ClassicalConnection', direction='Bi', models=None):
@@ -44,3 +46,15 @@ class QuantumConnection(Connection):
                                   forward_input=[('B', 'send')],
                                   forward_output=[('A', 'recv')])
 # %%
+class MeasurementError():
+    def __init__(self, p=0.1):
+        self.p = p * 10
+        self.qubit = None
+    
+    def error_operation(self, qubit):
+        self.qubit = qubit
+        r = random.randint(1, 100)
+        if r <= self.p:
+            ns.qubits.operate(self.qubit, ns.X)
+        else:
+            ns.qubits.operate(self.qubit, ns.I)
