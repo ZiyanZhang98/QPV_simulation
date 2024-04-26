@@ -1,7 +1,7 @@
 #%%
 import netsquid as ns
 from netsquid.protocols import NodeProtocol
-from component import MeasurementError
+from component import BitflipError
 from bool_function import bool_func
 #%%
 class V0Protocol(NodeProtocol):
@@ -30,8 +30,12 @@ class V0Protocol(NodeProtocol):
         '''
         return 2 * (self.len/2e5) + 1e-5
     
+    def apply_sp_error(self, qubit):
+        error = BitflipError(p=self.p)
+        error.error_operation(qubit=qubit)
+
     def apply_measurement_error(self, qubit):
-        error = MeasurementError(p = self.p)
+        error = BitflipError(p = self.p)
         error.error_operation(qubit=qubit)
 
     def get_result(self):
@@ -43,6 +47,8 @@ class V0Protocol(NodeProtocol):
     def prepare_epr_pair(self):
         q1 = ns.qubits.create_qubits(1)[0]
         q2 = ns.qubits.create_qubits(1)[0]
+        self.apply_sp_error(q1)
+        self.apply_sp_error(q2)
         ns.qubits.operate(q1, ns.H)
         ns.qubits.operate([q1,q2], ns.CNOT)
         return q1, q2

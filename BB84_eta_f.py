@@ -44,8 +44,8 @@ def main(round, distance, x, y, z):
             node_v0.ports['quantum'].connect(q_connection.ports['A'])
             node_p.ports['quantum'].connect(q_connection.ports['B'])
 
-            v0_protocol = V0Protocol(node=node_v0, x=x, y=y, z=z, len=d)
-            p_protocol = PProtocol(node=node_p)
+            v0_protocol = V0Protocol(node=node_v0, x=x, y=y, z=z, len=d, p=0.5)
+            p_protocol = PProtocol(node=node_p, p=0.5)
             v1_protocol = V1Protocol(node=node_v1, y=y, len=d)
             v2_protocol = V2Protocol(node=node_v2, z=z, len=d)
             # Start protocol
@@ -69,7 +69,7 @@ def main(round, distance, x, y, z):
                 if a == b == m == c: 
                     print('Time and answer matches, correct!')
                     correct_counter = correct_counter + 1
-                elif a != b or a != m or c != m:
+                elif a != b or a != m or c != m or a != c:
                     print('Wrong')
                 else:
                     print('Abort')
@@ -80,11 +80,17 @@ def main(round, distance, x, y, z):
         p_err.append((round-correct_counter)/round)
     return p_err, fibre_distance, time
 # %% Output images
+p_without_quantum = [0.06,0.13,0.13,0.18,0.17,0.19,0.29,0.23,0.33,0.35,0.43,0.44,0.5, 0.57,0.5,0.47,0.58,0.47,0.68,0.69,0.62,0.65,0.63,0.63, 0.76,0.73,0.63,0.75,0.67,0.73, 0.75,0.77,0.77,0.8, 0.78, 0.75,0.78,0.85,0.85,0.82,0.87,0.84,0.9,0.85,0.88,0.88,0.89,0.88, 0.9]
+p_with_me = [0.5,0.56,0.66,0.61,0.7,0.61,0.53,0.73,0.7,0.72,0.76,0.67,0.75,0.69,0.73,0.7,0.8,0.81,0.71,0.8,0.83,0.77,0.85,0.87,0.87,0.86,0.88,0.85,0.89,0.88,0.91,0.87,0.88,0.87, 0.84, 0.94, 0.9, 0.88, 0.94,0.92, 0.92, 0.94, 0.95, 0.96, 0.94, 0.94, 0.97, 0.96, 0.92]
+# %%
 p_err, distance, time = main(round=100, distance=50, x=1, y=0, z=3)
 plt.figure(dpi=400)
-plt.plot(distance, p_err)
+plt.plot(distance, p_err, label='With SPAM error')
+plt.plot(distance, p_without_quantum, label='Without quantum error')
+plt.plot(distance, p_with_me, label='With measurement error')
+plt.legend()
 plt.xlabel('Distance (km)')
 plt.ylabel('Error rate')
 # %%
-
+p_err
 # %%

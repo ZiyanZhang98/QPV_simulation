@@ -46,9 +46,9 @@ class QuantumConnection(Connection):
                                   forward_input=[('B', 'send')],
                                   forward_output=[('A', 'recv')])
 # %%
-class MeasurementError():
+class BitflipError():
     def __init__(self, p=0.1):
-        self.p = p * 10
+        self.p = p * 100
         self.qubit = None
     
     def error_operation(self, qubit):
