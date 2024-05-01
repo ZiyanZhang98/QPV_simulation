@@ -86,11 +86,9 @@ p_with_me = [0.5,0.56,0.66,0.61,0.7,0.61,0.53,0.73,0.7,0.72,0.76,0.67,0.75,0.69,
 p_err, distance, time = main(round=100, distance=50, x=1, y=0, z=3)
 plt.figure(dpi=400)
 plt.plot(distance, p_err, label='With SPAM error')
-plt.plot(distance, p_without_quantum, label='Without quantum error')
 plt.plot(distance, p_with_me, label='With measurement error')
+plt.plot(distance, p_without_quantum, label='Without quantum error')
 plt.legend()
 plt.xlabel('Distance (km)')
 plt.ylabel('Error rate')
-# %%
-p_err
 # %%
