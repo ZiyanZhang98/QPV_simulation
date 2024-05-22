@@ -25,9 +25,6 @@ class V0Protocol(NodeProtocol):
         return self.end_time - self.start_time
     
     def get_ideal_time(self):
-        '''
-        Consider gate time
-        '''
         return 2 * (self.len/2e5) + 1e-5
     
     def apply_sp_error(self, qubit):
@@ -70,13 +67,13 @@ class V0Protocol(NodeProtocol):
                 if bool_func(self.x, self.y, self.z) == 0:
                     state, prob = ns.qubits.measure(q2)
                     labels_z =  ("|0>", "|1>")
-                    print(f"V0's particle {self.node.name} measured "
-                          f"{labels_z[state]} with probability {prob:.2f}")
+                    # print(f"V0's particle {self.node.name} measured "
+                    #       f"{labels_z[state]} with probability {prob:.2f}")
                 else:
                     state, prob = ns.qubits.measure(q2, observable=ns.X)
                     labels_z =  ("|+>", "|->")
-                    print(f"V0's particle {self.node.name} measured "
-                        f"{labels_z[state]} with probability {prob:.2f}")
+                    # print(f"V0's particle {self.node.name} measured "
+                    #     f"{labels_z[state]} with probability {prob:.2f}")
                 self.result = labels_z[state]
             else:
                 self.result = "Loss"
