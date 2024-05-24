@@ -5,7 +5,7 @@ from component import BitflipError
 from bool_function import bool_func
 #%%
 class V0Protocol(NodeProtocol):
-    def __init__(self, len, node=None, name=None, x=1, y=1, z=1, p=0.1):
+    def __init__(self, len, node=None, name=None, x=1, y=1, z=1, p=0):
         super().__init__(node, name)
         self.result = None
         self.answer = None

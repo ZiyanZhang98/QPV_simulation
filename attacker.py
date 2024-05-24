@@ -28,3 +28,7 @@ class AliceProtocol(NodeProtocol):
             self.port_c2.tx_output(self.answer)
             self.port_c3.tx_output(self.answer)
 #%%
+class Alice_non_entangled(NodeProtocol):
+    def __init__(self, node=None, name=None):
+        super().__init__(node, name)
+        
