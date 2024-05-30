@@ -8,7 +8,7 @@ from verifier import V0Protocol, V1Protocol, V2Protocol
 from prover import PProtocol
 from bool_function import bool_func
 #%% Run the simulation
-def honest_distance_error(round, distance, x, y, z, measurement_error, loss_rate):
+def honest_distance_error(round, distance, x, y, z, measurement_error, loss_rate, spam=False):
     fibre_distance = np.arange(1, distance)
     p_err = []
     time = []
@@ -38,7 +38,7 @@ def honest_distance_error(round, distance, x, y, z, measurement_error, loss_rate
             node_v0.ports['quantum'].connect(q_connection.ports['A'])
             node_p.ports['quantum'].connect(q_connection.ports['B'])
 
-            v0_protocol = V0Protocol(node=node_v0, x=x, y=y, z=z, len=d, p=measurement_error)
+            v0_protocol = V0Protocol(node=node_v0, x=x, y=y, z=z, len=d, p=measurement_error, spam=spam)
             p_protocol = PProtocol(node=node_p, p=measurement_error)
             v1_protocol = V1Protocol(node=node_v1, y=y, len=d)
             v2_protocol = V2Protocol(node=node_v2, z=z, len=d)
@@ -80,10 +80,24 @@ p_err_q_only, distance, time = honest_distance_error(round=100, distance=50, x=1
 p_err, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0.2)
 
 plt.figure(dpi=400)
-plt.plot(distance, p_err_no_error, label='Without any constraints')
+plt.plot(distance, p_err, label='With all constraints')
 plt.plot(distance, p_err_loss_only, label='Photon loss only')
 plt.plot(distance, p_err_q_only, label='Measurement error only')
-plt.plot(distance, p_err, label='With all constraints')
+plt.plot(distance, p_err_no_error, label='Without any constraints')
+plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0)
+plt.xlabel('Distance')
+plt.ylabel('Error rate')
+plt.ylim(-0.1, 1)
+plt.show()
+# %%
+p_err_no_error, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0, loss_rate=0)
+p_err_q_only, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0)
+p_err_spam, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0, spam=True)
+
+plt.figure(dpi=400)
+plt.plot(distance, p_err_spam, label='With SPAM error')
+plt.plot(distance, p_err_q_only, label='Measurement error only')
+plt.plot(distance, p_err_no_error, label='Without any constraints')
 plt.legend()
 plt.xlabel('Distance')
 plt.ylabel('Error rate')

@@ -5,7 +5,7 @@ from component import BitflipError
 from bool_function import bool_func
 #%%
 class V0Protocol(NodeProtocol):
-    def __init__(self, len, node=None, name=None, x=1, y=1, z=1, p=0):
+    def __init__(self, len, node=None, name=None, x=1, y=1, z=1, p=0,spam=False):
         super().__init__(node, name)
         self.result = None
         self.answer = None
@@ -16,6 +16,7 @@ class V0Protocol(NodeProtocol):
         self.y = y
         self.z = z 
         self.p = p
+        self.spam = spam
         self.wait_time = 0
     
     def set_time(self):
@@ -44,8 +45,9 @@ class V0Protocol(NodeProtocol):
     def prepare_epr_pair(self):
         q1 = ns.qubits.create_qubits(1)[0]
         q2 = ns.qubits.create_qubits(1)[0]
-        self.apply_sp_error(q1)
-        self.apply_sp_error(q2)
+        if self.spam is True:
+            self.apply_sp_error(q1)
+            self.apply_sp_error(q2)
         ns.qubits.operate(q1, ns.H)
         ns.qubits.operate([q1,q2], ns.CNOT)
         return q1, q2
@@ -55,7 +57,6 @@ class V0Protocol(NodeProtocol):
         port_q = self.node.ports['quantum']
         port_c1 = self.node.ports['v0p']
         q1, q2 = self.prepare_epr_pair()
-        self.apply_measurement_error(q2)
         port_q.tx_output(q1)
         yield self.await_timer(duration = (self.len/2e5-self.len/3e5)*1e9)
         port_c1.tx_output(self.x)
@@ -63,6 +64,7 @@ class V0Protocol(NodeProtocol):
         while True:
             yield self.await_port_input(port_c1)
             answer = port_c1.rx_input().items[0]
+            self.apply_measurement_error(q2)
             if answer != 'Loss':
                 if bool_func(self.x, self.y, self.z) == 0:
                     state, prob = ns.qubits.measure(q2)

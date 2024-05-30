@@ -31,4 +31,33 @@ class AliceProtocol(NodeProtocol):
 class Alice_non_entangled(NodeProtocol):
     def __init__(self, node=None, name=None):
         super().__init__(node, name)
-        
+        self.state = ["|0>", "|1>", "|+>", "|->"]
+        self.answer = None        
+        self.port_q = self.node.ports['Alice_q']
+        self.port_c1 = self.node.ports['Alice_c1']
+        self.port_c2 = self.node.ports['Alice_c2']
+        self.port_c3 = self.node.ports['Alice_c3']
+    
+    def run(self):
+        while True:
+            yield self.await_port_input(self.port_c1)
+            self.port_c1.tx_output(self.answer)
+            self.port_c2.tx_output(self.answer)
+            self.port_c3.tx_output(self.answer)
+
+class Bob_non_entangled(NodeProtocol):
+    def __init__(self, node=None, name=None):
+        super().__init__(node, name)
+        self.state = ["|0>", "|1>", "|+>", "|->"]
+        self.answer = None        
+        self.port_q = self.node.ports['Bob_q']
+        self.port_c1 = self.node.ports['Bob_c1']
+        self.port_c2 = self.node.ports['Bob_c2']
+        self.port_c3 = self.node.ports['Bob_c3']
+    
+    def run(self):
+        while True:
+            yield self.await_port_input(self.port_c1)
+            self.port_c1.tx_output(self.answer)
+            self.port_c2.tx_output(self.answer)
+            self.port_c3.tx_output(self.answer)
