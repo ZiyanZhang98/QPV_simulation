@@ -8,7 +8,7 @@ from verifier import V0Protocol, V1Protocol, V2Protocol
 from attacker import AliceProtocol
 from bool_function import bool_func
 #%%
-def random_guess(round, distance, x, y, z):
+def random_guess(round, distance, x, y, z, measurement_error, loss_rate, spam=False):
     fibre_distance = np.arange(1, distance)
     p_err = []
     time = []
@@ -34,11 +34,11 @@ def random_guess(round, distance, x, y, z):
             node_v2.ports['v2p'].connect(c_connection3.ports['A'])
             node_Alice.ports['Alice_c3'].connect(c_connection3.ports['B'])
             # Quantum connection between V0 and P, with delay = d/2e5, and attenuation
-            q_connection = QuantumConnection(name="Channel_A2B", length=d, direction='A2B',  p_loss_length=0)
+            q_connection = QuantumConnection(name="Channel_A2B", length=d, direction='A2B',  p_loss_length=loss_rate)
             node_v0.ports['quantum'].connect(q_connection.ports['A'])
             node_Alice.ports['Alice_q'].connect(q_connection.ports['B'])
 
-            v0_protocol = V0Protocol(node=node_v0, x=x, y=y, z=z, len=d, p=0.5)
+            v0_protocol = V0Protocol(node=node_v0, x=x, y=y, z=z, len=d, p=measurement_error, spam=spam)
             Alice_protocol = AliceProtocol(node=node_Alice)
             v1_protocol = V1Protocol(node=node_v1, y=y, len=d)
             v2_protocol = V2Protocol(node=node_v2, z=z, len=d)
@@ -58,10 +58,10 @@ def random_guess(round, distance, x, y, z):
             print(a, b, c, m)
 
             if a == 'Loss' or b == 'Loss' or c == 'Loss' or a is None or b is None or c is None:
-                pass
+                print('loss')
             else:
                 if a == b == m == c: 
-                    print('Time and answer matches, correct!')
+                    print('correct')
                     correct_counter = correct_counter + 1
                 elif a != b or a != m or c != m or a != c:
                     print('Wrong')
@@ -75,15 +75,17 @@ def random_guess(round, distance, x, y, z):
     return p_err, fibre_distance, time
 # %%
 from run_honest_prover import honest_distance_error
+# Clear all in the run_honest_prover file except the main function
+p_err, distance, time = random_guess(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0.2)
+p_err_h, distance_h, time_h = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0.2)
 
-p_err, distance, time = random_guess(round=100, distance=50, x=1, y=0, z=3)
-p_err_h, distance_h, time_h = honest_distance_error(round=100, distance=50, x=1, y=0, z=3)
-plt.figure(dpi=400)
-plt.ylim(0, 1)
-plt.plot(distance, p_err, label='Random Guess')
-plt.plot(distance, p_err_h, label='Honest prover')
-plt.legend()
-plt.xlabel('Distance (km)')
-plt.ylabel('Error rate')
-# %%
+fig, ax = plt.subplots(nrows=1, ncols=1, dpi=300)
+ax.set_ylim(0, 1)
+ax.plot(distance, p_err, label='Random Guess')
+ax.plot(distance, p_err_h, label='Honest prover')
+fig.patches.extend([plt.Rectangle((0.4,0.6),0.48,0.27,
+                                  fill=True, color='g', alpha=0.2,
+                                  transform=fig.transFigure, figure=fig)])
+plt.legend(loc='best')
+plt.show()
 # %%
