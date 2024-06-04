@@ -76,8 +76,8 @@ def random_guess(round, distance, x, y, z, measurement_error, loss_rate, spam=Fa
 # %%
 from run_honest_prover import honest_distance_error
 # Clear all in the run_honest_prover file except the main function
-p_err, distance, time = random_guess(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0.2)
-p_err_h, distance_h, time_h = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0.2)
+p_err, distance, time = random_guess(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0)
+p_err_h, distance_h, time_h = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0)
 
 fig, ax = plt.subplots(nrows=1, ncols=1, dpi=300)
 ax.set_ylim(0, 1)
@@ -86,6 +86,16 @@ ax.plot(distance, p_err_h, label='Honest prover')
 fig.patches.extend([plt.Rectangle((0.4,0.6),0.48,0.27,
                                   fill=True, color='g', alpha=0.2,
                                   transform=fig.transFigure, figure=fig)])
+plt.legend(loc='best')
+plt.show()
+# %%
+fig, ax = plt.subplots(nrows=1, ncols=1, dpi=300)
+ax.set_ylim(0, 1)
+ax.plot(distance, p_err, label='Random Guess')
+ax.plot(distance, p_err_h, label='Honest prover')
+# fig.patches.extend([plt.Rectangle((0.4,0.6),0.48,0.27,
+#                                   fill=True, color='g', alpha=0.2,
+#                                   transform=fig.transFigure, figure=fig)])
 plt.legend(loc='best')
 plt.show()
 # %%
