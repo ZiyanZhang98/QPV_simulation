@@ -55,6 +55,7 @@ def honest_distance_error(round, distance, x, y, z, measurement_error, loss_rate
             c = v2_protocol.get_answer()
             # t_a = v0_protocol.get_elapsed_time()
             # t_b = v1_protocol.get_elapsed_time()
+            # t_c = v2_protocol.get_elapsed_time()
             m = v0_protocol.get_result()
             
             if a == 'Loss' or b == 'Loss' or c == 'Loss' or a is None or b is None or c is None:
@@ -73,33 +74,3 @@ def honest_distance_error(round, distance, x, y, z, measurement_error, loss_rate
         time.append(v0_protocol.get_elapsed_time())
         p_err.append((round-correct_counter)/round)
     return p_err, fibre_distance, time
-#%%
-# p_err_no_error, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0, loss_rate=0)
-# p_err_loss_only, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0, loss_rate=0.2)
-# p_err_q_only, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0)
-# p_err, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0.2)
-
-# plt.figure(dpi=400)
-# plt.plot(distance, p_err, label='With all constraints', color='#C25759')
-# plt.plot(distance, p_err_loss_only, label='Photon loss only', color='#599CB4')
-# plt.plot(distance, p_err_no_error, label='Without any constraints', color='green')
-# plt.legend(loc='best')
-# plt.xlabel('Distance')
-# plt.ylabel('Error rate')
-# plt.ylim(-0.1, 1)
-# plt.show()
-# # %%
-# p_err_no_error, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0, loss_rate=0)
-# p_err_q_only, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0)
-# p_err_spam, distance, time = honest_distance_error(round=100, distance=50, x=1, y=0, z=3, measurement_error=0.2, loss_rate=0, spam=True)
-
-# plt.figure(dpi=400)
-# plt.plot(distance, p_err_spam, label='With SPAM error', color=(77,133,189))
-# plt.plot(distance, p_err_q_only, label='Measurement error only', color=(247, 144, 61))
-# plt.plot(distance, p_err_no_error, label='Without any constraints', color='green')
-# plt.legend(loc='best')
-# plt.xlabel('Distance')
-# plt.ylabel('Error rate')
-# plt.ylim(-0.1, 1)
-# plt.show()
-# %%

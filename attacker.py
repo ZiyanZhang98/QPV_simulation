@@ -28,24 +28,28 @@ class AliceProtocol(NodeProtocol):
             self.port_c2.tx_output(self.answer)
             self.port_c3.tx_output(self.answer)
 #%%
-class Alice_MonE(NodeProtocol):
+class Alice_MoE(NodeProtocol):
     def __init__(self, node=None, name=None):
         super().__init__(node, name)
         self.state = ["|0>", "|1>", "|+>", "|->"]
-        self.answer = None        
+        self.answer = None
+        self.x = 0    
         self.port_q = self.node.ports['Alice_q']
         self.port_c1 = self.node.ports['Alice_c1']
-        self.port_c2 = self.node.ports['Alice_c2']
-        self.port_c3 = self.node.ports['Alice_c3']
+        self.port_c2 = self.node.ports['Alice_Bob']
+        self.port_c3 = self.node.ports['Alice_Charlie']
     
     def run(self):
         while True:
+            yield self.await_port_input(self.port_q) 
+            qubit = self.port_q.rx_input().items[0]
             yield self.await_port_input(self.port_c1)
+            self.x = self.port_c1
             self.port_c1.tx_output(self.answer)
             self.port_c2.tx_output(self.answer)
             self.port_c3.tx_output(self.answer)
 
-class Bob_MonE(NodeProtocol):
+class Bob_MoE(NodeProtocol):
     def __init__(self, node=None, name=None):
         super().__init__(node, name)
         self.state = ["|0>", "|1>", "|+>", "|->"]
@@ -62,12 +66,12 @@ class Bob_MonE(NodeProtocol):
             self.port_c2.tx_output(self.answer)
             self.port_c3.tx_output(self.answer)
 #%%
-class Charlie_MonE(NodeProtocol):
+class Charlie_MoE(NodeProtocol):
     def __init__(self, node=None, name=None):
         super().__init__(node, name)
         self.state = ["|0>", "|1>", "|+>", "|->"]
         self.answer = None        
-        self.port_q = self.node.ports['Bob_q']
+        self.port_q = self.node.ports['Charlie_q']
         self.port_c1 = self.node.ports['Bob_c1']
         self.port_c2 = self.node.ports['Bob_c2']
         self.port_c3 = self.node.ports['Bob_c3']
