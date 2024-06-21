@@ -18,7 +18,7 @@ def random_guess(round, distance, x, y, z, measurement_error, loss_rate, spam=Fa
             ns.sim_reset()
             # Init three nodes
             node_v0 = Node('v0', port_names = ['quantum', 'v0p'])
-            node_Alice = Node('A', port_names=['Alice_q', 'Alice_c1', 'Alice_c2', 'Alice_c3'])
+            node_Alice = Node('A', port_names=['Alice_q', 'Alice_b', 'Alice_c', 'Alice_c3'])
             node_v1 = Node('v1', port_names=['v1p'])
             node_v2 = Node('v2', port_names=['v2p'])
             # Classical channel with fibre delay = distance /3e5, connection between V0 and P
@@ -57,7 +57,7 @@ def random_guess(round, distance, x, y, z, measurement_error, loss_rate, spam=Fa
 
             print(a, b, c, m)
 
-            if a == 'Loss' or b == 'Loss' or c == 'Loss' or a is None or b is None or c is None:
+            if a is None or b is None or c is None:
                 print('loss')
             else:
                 if a == b == m == c: 
