@@ -4,12 +4,13 @@ from bool_function import bool_func
 from component import BitflipError
 
 class PProtocol(NodeProtocol):
-    def __init__(self, node=None, name=None, p=0):
+    def __init__(self, node=None, name=None, p=0, me=True):
         super().__init__(node, name)
         self.x = None
         self.y = None
         self.z = None
         self.p = p
+        self.me = me
         self.port_q = self.node.ports['quantum']
         self.port_c = self.node.ports['pv0']
         self.port_c2 = self.node.ports['pv1']
@@ -27,7 +28,8 @@ class PProtocol(NodeProtocol):
             self.x = self.port_c.rx_input().items[0]
             self.y = self.port_c2.rx_input().items[0]
             self.z = self.port_c3.rx_input().items[0]
-            self.apply_measurement_error(qubit=qubit)
+            if self.me is True:
+                self.apply_measurement_error(qubit=qubit)
 
             if bool_func(self.x, self.y, self.z) == 0:
                 state, prob = ns.qubits.measure(qubit)
