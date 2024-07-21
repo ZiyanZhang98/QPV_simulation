@@ -22,13 +22,12 @@ class Alice_g(NodeProtocol):
                 state, prob = ns.qubits.measure(self.qubit)
                 labels_z =  ("|0>", "|1>")
                 self.answer = labels_z[state]
-                print(f"{ns.sim_time()}: Particle p received and measured "f"{self.answer} with probability {prob:.2f}")
+                print(f"guess:{self.answer}")
          else:
             state, prob = ns.qubits.measure(self.qubit, observable=ns.X)
             labels_z =  ("|+>", "|->")
             self.answer = labels_z[state]
-            print(f"{ns.sim_time()}: Particle p received and measured "
-                    f"{self.answer} with probability {prob:.2f}")
+            print(f"guess:{self.answer}")
     
     def run(self):
         while True:
