@@ -66,9 +66,10 @@ class V0Protocol(NodeProtocol):
         while True:
             yield self.await_port_input(port_c1)
             answer = port_c1.rx_input().items[0]
+            print(f'answer received at V0 with state {self.answer} ')
             if self.me is True:
                 self.apply_measurement_error(q2)
-            if answer != 'Loss':
+            if answer is not None:
                 if bool_func(self.x, self.y, self.z) == 0:
                     state, prob = ns.qubits.measure(q2)
                     labels_z =  ("|0>", "|1>")
@@ -81,7 +82,7 @@ class V0Protocol(NodeProtocol):
                     #     f"{labels_z[state]} with probability {prob:.2f}")
                 self.result = labels_z[state]
             else:
-                self.result = "Loss"
+                self.result = None
 
             self.end_time = ns.sim_time()
             self.answer = answer
