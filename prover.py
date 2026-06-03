@@ -28,6 +28,7 @@ class PProtocol(NodeProtocol):
             self.x = self.port_c.rx_input().items[0]
             self.y = self.port_c2.rx_input().items[0]
             self.z = self.port_c3.rx_input().items[0]
+            
             if self.me is True:
                 self.apply_measurement_error(qubit=qubit)
 

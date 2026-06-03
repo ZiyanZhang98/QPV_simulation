@@ -55,6 +55,12 @@ class BitflipError():
         self.qubit = qubit
         r = random.randint(1, 100)
         if r <= self.p:
-            ns.qubits.operate(self.qubit, ns.X)
+            dice = random.randint(0, 1)
+            if dice == 1:
+                ns.qubits.operate(self.qubit, ns.X)
+            else:
+                ns.qubits.operate(self.qubit, ns.H)
         else:
             ns.qubits.operate(self.qubit, ns.I)
+
+        return self.qubit
