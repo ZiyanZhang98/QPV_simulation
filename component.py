@@ -7,10 +7,35 @@ from netsquid.components.models import qerrormodels
 import netsquid as ns
 import random
 #%%
+LIGHT_SPEED_KM_S = 3e5
+CLASSICAL_SIGNAL_SPEED_KM_S = LIGHT_SPEED_KM_S
+QUBIT_SIGNAL_SPEED_KM_S = 2 * LIGHT_SPEED_KM_S / 3
+NS_PER_SECOND = 1e9
+
+
+def propagation_delay_s(length_km, speed_km_s):
+    """Return propagation time in seconds for distance in km and speed in km/s."""
+    return length_km / speed_km_s
+
+
+def seconds_to_ns(seconds):
+    """Convert seconds to NetSquid's nanosecond simulation-time unit."""
+    return seconds * NS_PER_SECOND
+
+
+def ns_to_seconds(nanoseconds):
+    """Convert NetSquid nanoseconds to seconds."""
+    return nanoseconds / NS_PER_SECOND
+
+
+def propagation_delay_ns(length_km, speed_km_s):
+    return seconds_to_ns(propagation_delay_s(length_km, speed_km_s))
+
+
 class ClassicalConnection(DirectConnection):
     def __init__(self, length, name='ClassicalConnection', direction='Bi', models=None):
         '''
-        Init classical connection(s) between nodes. We assume data is tranmistted with microwave at speed c=3e5.
+        Classical messages propagate at c = 3e5 km/s.
 
         IMPORTANT NOTE: it seems the default fibre delay model is broken. 
         '''
@@ -18,12 +43,20 @@ class ClassicalConnection(DirectConnection):
         self.len = length
 
         if direction != 'B2A':
-            self.add_subcomponent(ClassicalChannel('Channel_A2B', length=self.len, delay=self.len/3e5, models=models),
+            self.add_subcomponent(ClassicalChannel(
+                                  'Channel_A2B',
+                                  length=self.len,
+                                  delay=propagation_delay_ns(self.len, CLASSICAL_SIGNAL_SPEED_KM_S),
+                                  models=models),
                                   forward_input=[('A', 'send')],
                                   forward_output=[('B', 'recv')])
 
         if direction != 'A2B':
-            self.add_subcomponent(ClassicalChannel('Channel_B2A', length=self.len, delay=self.len/3e5, models=models),
+            self.add_subcomponent(ClassicalChannel(
+                                  'Channel_B2A',
+                                  length=self.len,
+                                  delay=propagation_delay_ns(self.len, CLASSICAL_SIGNAL_SPEED_KM_S),
+                                  models=models),
                                   forward_input=[('B', 'send')],
                                   forward_output=[('A', 'recv')])
 # %%
@@ -37,12 +70,20 @@ class QuantumConnection(Connection):
             }
 
         if direction != 'B2A':
-            self.add_subcomponent(QuantumChannel('QChannel_A2B', length=self.len, delay=self.len/2e5, models=models),
+            self.add_subcomponent(QuantumChannel(
+                                  'QChannel_A2B',
+                                  length=self.len,
+                                  delay=propagation_delay_ns(self.len, QUBIT_SIGNAL_SPEED_KM_S),
+                                  models=models),
                                   forward_input=[('A', 'send')],
                                   forward_output=[('B', 'recv')])
 
         if direction != 'A2B':
-            self.add_subcomponent(QuantumChannel('QChannel_B2A', length=self.len, delay=self.len/2e5, models=models),
+            self.add_subcomponent(QuantumChannel(
+                                  'QChannel_B2A',
+                                  length=self.len,
+                                  delay=propagation_delay_ns(self.len, QUBIT_SIGNAL_SPEED_KM_S),
+                                  models=models),
                                   forward_input=[('B', 'send')],
                                   forward_output=[('A', 'recv')])
 # %%

@@ -5,6 +5,48 @@ from netsquid.nodes import Node
 from component import QuantumConnection, ClassicalConnection
 from verifier import V0Protocol, V1Protocol, V2Protocol
 from attacker import Alice_g
+
+
+def check_commitment_result(v0_protocol, v1_protocol, v2_protocol):
+    a = v0_protocol.get_answer()
+    b = v1_protocol.get_answer()
+    c = v2_protocol.get_answer()
+    m = v0_protocol.get_result()
+    commitments = (
+        v0_protocol.get_commitment(),
+        v1_protocol.get_commitment(),
+        v2_protocol.get_commitment(),
+    )
+
+    if None in commitments:
+        print('Commitment missing')
+        return False
+
+    if commitments[0] != commitments[1] or commitments[0] != commitments[2]:
+        print('Commitment mismatch')
+        return False
+
+    if commitments[0] == 0:
+        print('loss')
+        return False
+
+    print(a, b, c, m)
+
+    if a is None or b is None or c is None or a == 'Loss' or b == 'Loss' or c == 'Loss':
+        print('loss')
+        return False
+
+    if a == b == m == c:
+        print('correct')
+        return True
+
+    if a != b or a != m or c != m or a != c:
+        print('Wrong')
+    else:
+        print('Abort')
+    return False
+
+
 #%%
 def random_guess(round, distance, x, y, z, measurement_error=0, loss_rate=0.2, spam=False):
     fibre_distance = np.arange(1, distance)
@@ -38,7 +80,7 @@ def random_guess(round, distance, x, y, z, measurement_error=0, loss_rate=0.2, s
             node_Alice.ports['Alice_q'].connect(q_connection.ports['B'])
 
             v0_protocol = V0Protocol(node=node_v0, x=x, y=y, z=z, len=d, p=measurement_error, spam=spam)
-            Alice_protocol = Alice_g(node=node_Alice)
+            Alice_protocol = Alice_g(node=node_Alice, len=d)
             v1_protocol = V1Protocol(node=node_v1, y=y, len=d)
             v2_protocol = V2Protocol(node=node_v2, z=z, len=d)
             # Start protocol
@@ -48,24 +90,8 @@ def random_guess(round, distance, x, y, z, measurement_error=0, loss_rate=0.2, s
             v2_protocol.start()
             
             stats = ns.sim_run()
-            # Check results
-            a = v0_protocol.get_answer()
-            b = v1_protocol.get_answer()
-            c = v2_protocol.get_answer()
-            m = v0_protocol.get_result()
-
-            print(a, b, c, m)
-
-            if a is None or b is None or c is None:
-                print('loss')
-            else:
-                if a == b == m == c: 
-                    print('correct')
-                    correct_counter = correct_counter + 1
-                elif a != b or a != m or c != m or a != c:
-                    print('Wrong')
-                else:
-                    print('Abort')
+            if check_commitment_result(v0_protocol, v1_protocol, v2_protocol):
+                correct_counter = correct_counter + 1
             # Reset the timer
             ns.sim_reset()
 
@@ -104,7 +130,7 @@ def random_guess_photon_loss(round, eta, x, y, z, measurement_error=0, spam=Fals
             node_Alice.ports['Alice_q'].connect(q_connection.ports['B'])
 
             v0_protocol = V0Protocol(node=node_v0, x=x, y=y, z=z, len=d, p=measurement_error, spam=spam)
-            Alice_protocol = Alice_g(node=node_Alice)
+            Alice_protocol = Alice_g(node=node_Alice, len=d)
             v1_protocol = V1Protocol(node=node_v1, y=y, len=d)
             v2_protocol = V2Protocol(node=node_v2, z=z, len=d)
             # Start protocol
@@ -114,24 +140,8 @@ def random_guess_photon_loss(round, eta, x, y, z, measurement_error=0, spam=Fals
             v2_protocol.start()
             
             stats = ns.sim_run()
-            # Check results
-            a = v0_protocol.get_answer()
-            b = v1_protocol.get_answer()
-            c = v2_protocol.get_answer()
-            m = v0_protocol.get_result()
-
-            print(a, b, c, m)
-
-            if a is None or b is None or c is None:
-                print('loss')
-            else:
-                if a == b == m == c: 
-                    print('correct')
-                    correct_counter = correct_counter + 1
-                elif a != b or a != m or c != m or a != c:
-                    print('Wrong')
-                else:
-                    print('Abort')
+            if check_commitment_result(v0_protocol, v1_protocol, v2_protocol):
+                correct_counter = correct_counter + 1
             # Reset the timer
             ns.sim_reset()
         p_err.append((round-correct_counter)/round)

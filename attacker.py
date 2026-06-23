@@ -1,20 +1,27 @@
 #%%
 import netsquid as ns
 from netsquid.protocols import NodeProtocol
-from component import BitflipError
+from component import BitflipError, QUBIT_SIGNAL_SPEED_KM_S, propagation_delay_ns
 import random
 from bool_function import bool_func
 #%%
 class Alice_g(NodeProtocol):
-    def __init__(self, node=None, name=None):
+    def __init__(self, node=None, name=None, len=None):
         super().__init__(node, name)
         self.basis = None
         self.qubit = None
         self.answer = None   
+        self.len = len
         self.port_q = self.node.ports['Alice_q']
         self.port_c0 = self.node.ports['Alice_c0']
         self.port_c1 = self.node.ports['Alice_c1']
         self.port_c2 = self.node.ports['Alice_c2']
+
+    def broadcast(self, kind, value):
+        message = {'kind': kind, 'value': value}
+        self.port_c0.tx_output(message)
+        self.port_c1.tx_output(message)
+        self.port_c2.tx_output(message)
     
     def random_guess(self):
          self.basis = random.randint(0, 2)
@@ -29,10 +36,21 @@ class Alice_g(NodeProtocol):
     
     def run(self):
         while True:
-            yield (self.await_port_input(self.port_q))
-            self.qubit = self.port_q.rx_input().items[0]
+            if self.len is None:
+                yield self.await_port_input(self.port_q)
+            else:
+                quantum_timeout = propagation_delay_ns(self.len, QUBIT_SIGNAL_SPEED_KM_S) + 1
+                yield (self.await_port_input(self.port_q) | self.await_timer(duration=quantum_timeout))
+            q_message = self.port_q.rx_input()
+            self.qubit = q_message.items[0] if q_message is not None and q_message.items else None
+            commitment = 1 if self.qubit is not None else 0
+            self.broadcast('commitment', commitment)
+            if self.qubit is None:
+                self.broadcast('answer', 'Loss')
+                return
+
             self.random_guess()
-            yield (self.await_port_input(self.port_c0) or self.await_port_input(self.port_c2) or self.await_port_input(self.port_c1))
+            yield (self.await_port_input(self.port_c0) | self.await_port_input(self.port_c2) | self.await_port_input(self.port_c1))
             x = self.port_c0.rx_input().items[0]
             y = self.port_c1.rx_input().items[0]
             z = self.port_c2.rx_input().items[0]
@@ -41,9 +59,8 @@ class Alice_g(NodeProtocol):
                 self.answer = None
 
             print(self.answer)
-            self.port_c0.tx_output(self.answer)
-            self.port_c1.tx_output(self.answer)
-            self.port_c2.tx_output(self.answer)
+            self.broadcast('answer', self.answer)
+            return
 
 class Bob_g(NodeProtocol):
     def __init__(self, node=None, name=None):
